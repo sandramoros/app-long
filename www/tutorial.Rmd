@@ -1,0 +1,361 @@
+---
+title: 'Tutorial: Aplicación Shiny para el análisis de estudio preclínicos'
+subtitle: Analiza tus datos con estos sencillos pasos
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    df_print: paged
+  pdf_document:
+    toc: true
+    toc_depth: '3'
+---
+
+# **Introducción**
+
+Esta aplicación ha sido desarrollada para facilitar el ajuste de **modelos estadísticos**: en función del número de *timepoints* a analizar se ajusta:
+
+- Un modelo lineal simple (`lm()`) si solo hay un *timepoint*.
+
+- Modelos lineales de efectos mixtos (`lmer()` o `lme()`) si hay dos o más *timepoints*, permitiendo así modelar la variabilidad entre sujetos."
+
+
+La aplicación permite:
+
+✔️ Cargar un archivo Excel con los datos experimentales, en formato *wide* o *long*.
+
+✔️ Seleccionar grupos y *timepoints* para comparar.  
+
+✔️ Ajustar un modelo usando `lm()`, `lmer()` o `lme()`, según corresponda.
+
+✔️ Visualizar los resultados, incluyendo gráficos.
+
+✔️ Descargar informes (Excel y HTML).
+
+---
+
+# **Carga de datos**
+
+La aplicación acepta **archivos Excel (.xlsx)** con datos en dos formatos posibles, *wide* o *long*. En **Plantilla de descarga** se pueden decargar las dos plantillas para rellenarlas con los datos del usuario.
+
+## Formato Wide
+
+| ID_sujeto | ID_grupo | Nombre_grupo | Nombre_variable | Valor_timepoint1 | Valor_timepoint2 | ... |
+|-----------|-----------|----------------|------------------|--------------------|--------------------|-----|
+| 1.1       | A         | control        | nAb              | 1.30               | 1.35               | ... |
+| 1.2       | A         | control        | nAb              | 1.35               | 1.30               | ... |
+| ---       | ---       | ---            | ---              | ---                | ---                | ... |
+| 2.1       | B         | tratado        | nAb              | 1.40               | 2.60               | ... |
+| 2.2       | B         | tratado        | nAb              | 1.30               | 2.70               | ... |
+| ---       | ---       | ---            | ---              | ---                | ---                | ... |
+| 1.1       | A         | control        | IgG              | 1.35               | 1.45               | ... |
+| 1.2       | A         | control        | IgG              | 1.30               | 1.40               | ... |
+| ---       | ---       | ---            | ---              | ---                | ---                | ... |
+| 2.1       | B         | tratado        | IgG              | 1.40               | 2.90               | ... |
+| 2.2       | B         | tratado        | IgG              | 1.30               | 2.85               | ... |
+
+
+📌 En este formato, cada columna "Valor_timepointX" representa una medida temporal diferente. Puede cambiarse el nombre por algo más descriptivo como "D0, D14, D30..." -día- o "M0, M1, M3, M6..." -mes-. SIEMPRE incluir un número en el nombre poner las columnas en orden cronológico.
+
+
+## Formato Long
+
+| ID_sujeto | ID_grupo | Nombre_grupo | Nombre_variable | Timepoint | Valores_variable |
+|-----------|-----------|----------------|------------------|-----------|------------------|
+| 1.1       | A         | control        | nAb              | 1         | 1.30             |
+| 1.1       | A         | control        | nAb              | 2         | 1.35             |
+| 1.2       | A         | control        | nAb              | 1         | 1.35             |
+| 1.2       | A         | control        | nAb              | 2         | 1.30             |
+| ---       | ---       | ---            | ---              | ---       | ---              |
+| 2.1       | B         | tratado        | nAb              | 1         | 1.40             |
+| 2.1       | B         | tratado        | nAb              | 2         | 2.60             |
+| 2.2       | B         | tratado        | nAb              | 1         | 1.30             |
+| 2.2       | B         | tratado        | nAb              | 2         | 2.70             |
+| ---       | ---       | ---            | ---              | ---       | ---              |
+| 1.1       | A         | control        | IgG              | 1         | 1.35             |
+| 1.1       | A         | control        | IgG              | 2         | 1.45             |
+| 1.2       | A         | control        | IgG              | 1         | 1.30             |
+| 1.2       | A         | control        | IgG              | 2         | 1.40             |
+| ---       | ---       | ---            | ---              | ---       | ---              |
+| 2.1       | B         | tratado        | IgG              | 1         | 1.40             |
+| 2.1       | B         | tratado        | IgG              | 2         | 2.90             |
+| 2.2       | B         | tratado        | IgG              | 1         | 1.30             |
+| 2.2       | B         | tratado        | IgG              | 2         | 2.85             |
+| ---       | ---       | ---            | ---              | ---       | ---              |
+
+
+📌 En este formato, la columna "Timepoint" indica el momento temporal. SIEMPRE incluir un número en el nombre (por ejemplo: 1, 15, 30 o D1, D15, D30).
+
+En cuanto a las variales respuesta, habrá tantas columnas "Valores_variable" como variables se quieran analizar. Se les puede dar un nombre descriptivo, por ejemplo "nAb" o "IgG".
+
+    ❗Importante: la aplicación usará la variable "ID_grupo" para ajustar los modelos. La variable "Nombre_grupo" es solo informativa para el investigador, por si quiere asociar una descripción al código del grupo, que habitualmente suele ser algo corto como "A, B, C..." o "1, 2, 3...".
+    
+    ❗Importante: si falta alguna observación en algún sujeto, dejar la celda vacía o bien escribir NA y la aplicación lo interpretará como un dato faltante.
+
+---
+
+# **Selección de parámetros (menú lateral)**
+
+
+## Cargar el archivo Excel
+
+1. Haz clic en **"Cargar tus datos (archivo Excel)"**. La aplicación reconocerá si está en formato *wide* o *long*.
+
+2. La aplicación mostrará una previsualización de los datos cargados. Puedes elegir cuántos decimales visualizar.
+
+
+## Seleccionar los *timepoints* y variable a analizar
+
+1. Selecciona qué *timepoints* se quieren analizar en **Selecciona timepoints**. Si se elige uno, la aplicación usará `lm()`. Si se eligen dos o más, se podrá hacer `lmer()` o `lme()`.
+
+2. Elige qué variable quieres analizar en **Selecciona la variable de interés**. Esta selección estará disponible cuando se carguen los datos.
+
+
+## Definir el modo de comparación de los grupos
+
+1. Define cómo comparar los grupos en **Modo de comparación de grupos**:
+
+    **"Todos contra todos"**: Compara todos los grupos entre sí.
+
+      💡 Nota: si solo hay dos grupos, elige este modo.
+
+    **"Todos contra control"**: Compara cada grupo con el grupo control seleccionado.
+
+2. Selecciona los grupos en **Selecciona grupos para comparar**. Si has elegido "Todos contra control" aparecerá una nueva casilla **Selecciona el grupo control**.
+
+
+## Definir el modelo
+
+Si se ha elegido un *timepoint*:
+
+1. Elige el **Método de corrección de p-value (pruebas post hoc))** para las múltiples comparativas entre grupos.
+
+
+Si se ha elegido más de un *timepoint*:
+
+1. Se puede clicar en la casilla **Realizar análisis de homocedasticidad** para orientarse entre elegir `lmer()` o `lme()`.
+Si hay homocedasticidad, en **Selecciona el modelo a utilizar** se puede optar por **Modelo mixto `lmer()`**.
+
+2. Si no se cumple el supuesto de homocedasticidad, en **Selecciona el modelo a utilizar** se puede optar por **Modelo mixto con varianza `lme()`** y entonces aparecerán dos selectores para elegir la **Estructura de correlación entre residuos** y la **Estructura de la varianza residual**.
+
+    📍 Ejemplo práctico:
+    
+    Imagina que se mide el título de anticuerpos neutralizantes en individuos vacunados con diferentes vacunas en 3 momentos: día 0, día 14 y día 60. Es razonable asumir que las mediciones de un mismo animal están correlacionadas entre sí, especialmente entre puntos cercanos en el tiempo.
+    
+    2.1 Estructura de correlación entre residuos: sirve para modelar las observaciones repetidas de un mismo sujeto a lo largo del tiempo, cuando están correlacionadas entre sí (es decir, no son independientes).
+
+      - AR(1) (`corAR1`): asume que las mediciones repetidas de un mismo sujeto están correlacionadas, y que esta correlación disminuye cuanto más separadas estén en el tiempo. En el ejemplo, entre día 0 y día 14 habría una correlación alta, pero entre día 0 y día 60 sería baja y entre día 14 y día 60 sería media. Sin embargo, es conveniente aplicar esta opción solo cuando los tiempos están equiespaciados.
+      
+      - ARMA(1,1) (`corARMA`): es una extensión de AR(1) que permite modelar patrones más complejos de correlación. En el ejemplo, sería útil si el título de anticuerpos no sigue una progresión suave, sino que presenta fluctuaciones o rebotes inesperados entre visitas.
+    
+      - Simetría compuesta (`corCompSymm`): supone que todas las mediciones de un sujeto están igualmente correlacionadas entre sí, sin importar el tiempo. Es útil cuando hay pocos *timepoints*. En el ejemplo, se vería una respuesta de anticuerpos muy estable a lo largo del tiempo, sin evidencias de que el día 14 esté más relacionado con el día 0 que con el día 60. 
+    
+      - Correlación arbitraria (`corSymm`): permite que cada par de *timepoints* tenga una correlación distinta, sin ningún patrón predefinido. Por ejemplo, el día 14 y el día 60 están muy relacionados, pero ambos poco con día 0. Al ser tan flexible requiere más datos.
+    
+    También hay la opción de elegir Ninguna y entonces el modelo no considera ninguna correlación entre mediciones del mismo sujeto. Solo se recomienda si se ha verificado que los residuos son independientes, lo cual es raro en estudios longitudinales.
+    
+    
+    2.2 Estructura de la varianza residual: modelar la varibilidad de los residuos es útil cuando se sospecha que la varianza no es constante entre grupos o a lo largo del tiempo (es decir, que existe **heterocedasticidad**).
+    
+      - `varIdent por grupo`: permite que cada grupo tenga una varianza distinta en los residuos. Por ejemplo, los títulos de anticuerpos en el grupo vacuna A son muy homogéneos (varianza baja), pero en el grupo vacuna B hay mucha variabilidad entre sujetos.
+    
+      - `varIdent por timepoint`: permite que la varianza cambie con el tiempo, igual para todos los grupos.Por ejemplo, en el día 0, todos los sujetos tienen valores similares (poca variabilidad) pero en el día 60, los valores están mucho más dispersos.
+    
+      - `varIdent por grupo y timepoint`: permite que cada combinación de grupo y momento temporal tenga su propia varianza. Por ejemplo, el grupo vacuna A es muy estable en todos los *timepoints*, pero el grupo vacuna B tiene poca variabilidad al inicio, pero es muy variable a los 60 días.
+    
+      - `varPower`: modela que la varianza depende del valor medio estimado del modelo. Cuanto mayor sea el valor predicho, mayor (o menor) puede ser la varianza residual. Por ejemplo, los individuos con títulos de anticuerpos más altos presentan también mayor variabilidad entre ellos, es decir las respuestas bajas son muy homogéneas, pero las más altas son muy dispersas.
+    
+      - `varConstPower`: permite una combinación entre una varianza constante y una parte proporcional al valor medio estimado. Por ejemplo, hay una variabilidad base común en todos los sujetos, pero a medida que los valores aumentan, también lo hace la dispersión (aunque no completamente proporcional).
+    
+    También hay la opción de elegir Ninguna y entonces no se modela ninguna estructura especial: se asume homocedasticidad (misma varianza residual para todos los casos).
+
+3. Elige si **Incluir Interacción**. Al seleccionas la opción "Sí", se está indicando que el modelo debe tener en cuenta no solo los efectos principales de grupo y tiempo, sino también cómo se combinan entre sí.
+  
+    📍 Ejemplo práctico:
+    
+    Se analizan los títulos de anticuerpos en tres *timepoints* (día 0, 14 y 60) para dos vacunas distintas (grupo A y grupo B).
+    
+    Si se incluye la interacción grupo * tiempo, el modelo podrá detectar comportamientos como estos:
+    
+      - La vacuna A sube mucho a los 14 días y luego se mantiene.
+    
+      - La vacuna B sube poco a los 14 días pero sigue subiendo hasta el día 60.
+    
+    Si no se incluye la interacción esto no se detectaría porque se asume que todos los grupos evolucionan igual en el tiempo.
+    
+    En el caso de que el test de interacción no muestre significancia no sería necesaría incorporarla (se puede comprobar en la tabla del modelo).
+      
+    💡 Nota: grupo * tiempo equivale a grupo + tiempo + grupo:tiempo.
+
+4. Por último, elige el **Método de corrección de p-value (pruebas post hoc))** para las múltiples comparativas entre grupos.
+
+
+## Ejecutar el análisis
+
+1. Haz clic en **"Realizar análisis"**. Podrás ver en las distintas pestañas los resultados.
+
+
+## Exportación de resultados
+
+1. Para descargar los resultados en Excel (no incluye gráficos), haz clic en **Descargar informe Excel**.
+
+2. Para descargar los resultados en HTML (incluy gráficos), haz clic en **Descargar informe HTML"**.
+
+
+---
+
+# **Interpretación de resultados (pestañas)**
+
+Tenemos las pestañas de:
+
+## Datos cargados
+
+Se visualizan los datos que se han subido a la aplicación. Se puede seleccionar cuántos ver por página y dispone también de un buscador.
+
+
+## Datos procesados
+
+Se visualiza el procesado de los datos (si estaban en formato *wide* se ha pasado a *long*). Se puede seleccionar cuántos ver por página y dispone también de un buscador.
+
+
+## Gráfica de los datos
+
+Si solo se seleccióna un *timepoint* se muestra un *boxplot* con la distribución de la variable seleccionada por grupo. Si se selecciona más de un *timepoint*, se muestra una gráfica con la evolución de la variable seleccionada por grupo a lo largo del tiempo.
+
+
+## Modelo
+
+Se muestra la fórmula utilizada, junto con el resumen estadístico.
+
+1. **La fórmula** permite comprobar si se ha incluido o no la interacción entre grupo y timepoint, y si se trata de un modelo con efectos aleatorios (`lme()` o `lmer()`) o sin ellos (`lm()`).
+  
+2. **El resumen del modelo** (`summary`) incluye:
+
+- Los coeficientes estimados para cada término (intercepto, grupo, timepoint, interacción).
+
+  El **intercepto** representa el valor esperado para el grupo y timepoint de referencia. Los coeficientes de grupo y tiempo muestran la diferencia respecto al grupo y timepoint de referencia.
+  Si hay interacción, los coeficientes reflejan cómo cambia el efecto de un factor en función del otro.
+
+- Sus errores estándar, valores *t* y *p*-valores.
+
+  ❗Importante: presta atención a los coeficientes significativos (*p* < 0,05), ya que indican efectos estadísticamente relevantes.
+
+- En `lme()` y `lmer()`, también incluye el número de niveles del efecto aleatorio.
+
+- En `lme()` se muestra el valor del logLik, junto con los criterios de información AIC y BIC. Estos indicadores son útiles para comparar modelos que solo difieren en la estructura de correlación entre residuos o en la estructura de la varianza residual: AIC y BIC penalizan la complejidad del modelo y cuanto **más bajos**, mejor; mientras que logLik mide el ajuste y cuanto **más alto**, mejor.
+
+💡 Nota: puedes probar distintas combinaciones de estructuras (por ejemplo, AR(1) con `varIdent` por grupo) y comparar los valores de AIC/BIC con otras opciones. Esto te ayudará a seleccionar el mejor modelo.
+
+
+## Comparación de modelos (interacción)
+
+Independientemente de lo seleccionado en el menú de interacción, aquí se muestra la comparación entre ajustar el modelo con o sin interacción entre grupo y *timepoint*. Un *p*-valor <0,05 sugiere que el modelo con interacción se ajusta mejor, lo que indicaría que la evolución temporal difiere entre grupos. Por lo tanto, esta pestaña permite valorar si es necesario interpretar el modelo completo (con interacción) o si puede usarse una versión más sencilla sin ella.
+
+
+## Matriz varianza-covarianza
+
+En esta aplicación el único efecto aleatorio incluido es el intercepto por sujeto (ID_sujeto) (en `lme()` y en `lmer()`), por lo que no aparecerán las covarianzas. El *output* muestra:
+
+1. La desviación estándar del intercepto aleatorio, es decir, variabilidad entre sujetos en su nivel basal. Si la desviación estándar del intercepto es cercana a 0, significa que no se detecta variabilidad sistemática entre sujetos en ese nivel. Pero el efecto aleatorio puede seguir siendo importante para modelar la dependencia entre observaciones repetidas de un mismo sujeto, por ejemplo, puede ser que los valores sean iguales a día 0 para todos los sujetos pero no a día 60.
+  
+2. La desviación estándar del residuo, que refleja la variabilidad no explicada por el modelo.
+  
+💡 Nota: en modelos `lme()` también se muestra la varianza correspondiente a cada componente.
+
+
+## Comparaciones entre grupos
+
+Muestra las medias estimadas y los contrastes calculados a partir del modelo ajustado:
+
+1. Medias estimadas:
+  
+- Medias globales por grupo: promedia los valores estimados en todos los *timepoints* para cada grupo.
+    
+Solo disponible en modelos `lme()` o `lmer()`:
+    
+- Medias por grupo dentro de cada timepoint: útil para ver cómo difieren los grupos en cada momento del estudio.
+  
+- Medias por *timepoint* dentro de cada grupo: permite ver cómo evoluciona cada grupo a lo largo del tiempo.
+
+2. Contrastes de medias estimadas con sus errores estándar, intervalos de confianza y *p*-valores:
+
+- Comparaciones globales entre grupos.
+
+Solo disponible en modelos `lme()` o `lmer()`:
+    
+- Comparaciones entre grupos dentro de cada *timepoint*.
+    
+- Comparaciones entre timepoints dentro de cada grupo.
+
+
+## Gráfico de comparaciones
+
+Muestra visualmente las comparaciones entre medias estimadas. Según el modelo ajustado, se pueden ver los gráficos de:
+
+1. Comparación global entre grupos: comparación de medias promediadas en todos los timepoints.
+  
+Solo disponible en modelos `lme()` o `lmer()`:
+
+2. Comparaciones entre grupos por timepoint: útil para detectar diferencias entre tratamientos en cada momento del estudio.
+  
+3. Comparaciones entre timepoints por grupo: permite observar la evolución temporal dentro de cada grupo.
+  
+
+## Diagnósticos textuales
+
+Muestra el resultado de pruebas estadísticas que evalúan los principales supuestos del modelo: normalidad de los residuos, homocedasticidad (igualdad de varianzas) e independencia.
+
+En modelos `lm`:
+
+1. Normalidad: se aplican los tests de Shapiro-Wilk y Kolmogorov-Smirnov.
+
+2. Homocedasticidad: se utiliza el test de Breusch-Pagan.
+
+3. Independencia: se realiza el test de Durbin-Watson, útil para detectar autocorrelación en los residuos.
+
+❗Importante: si los *p*-valores son > 0,05 no hay evidencia para rechazar los supuestos (es decir, se consideran como cumplidos).
+
+En modelos `lmer()`/`lme()`:
+
+1. Normalidad: se aplican igualmente los tests de Shapiro-Wilk y Kolmogorov-Smirnov sobre los residuos marginales.
+2. Homocedasticidad: se evalúa mediante el test de Levene (comparación de varianzas entre grupos).
+
+
+Recomendaciones si se detectan problemas:
+
+- Si los residuos **no son normales**, se puede considerar una **transformación** de la variable dependiente (logarítmica, raíz cuadrada, Box-Cox) y volver a cargar los datos para repetir el análisis.
+  
+- Si en LMM hay **heterocedasticidad** (varianzas desiguales), se recomienda utilizar un modelo `lme()` con una estructura de varianza residual más flexible (varIdent, varPower, etc.).
+
+
+## Diagnósticos gráficos
+
+Muestra una serie de gráficos diseñados para evaluar visualmente si se cumplen los supuestos del modelo ajustado.
+
+1. Histograma de residuos: permite observar si los residuos siguen una distribución aproximadamente normal.
+  ❗Importante:  una forma similar a la curva roja (gaussiana) sugiere normalidad.
+
+2. Gráfico Q-Q de residuos: muestra si los residuos se alinean con una distribución normal teórica.  
+  ❗Importante: los puntos alineados en la diagonal indican normalidad.
+
+3. Gráfico Q-Q de efectos aleatorios *(solo en `lme()`/`lmer()`)*: permite evaluar si los efectos aleatorios también siguen una distribución normal.  
+  ❗Importante: los puntos alineados en la diagonal indican normalidad.
+
+4. Residuos vs. valores ajustados: permite detectar posibles patrones en los residuos.  
+  ❗Importante: una nube aleatoria y sin forma definida indica homocedasticidad.
+
+5. Gráfico de autocorrelación de residuos: útil para comprobar si los residuos están correlacionados en el tiempo (especialmente relevante en datos longitudinales).  
+  ❗Importante: las barras dentro de la banda azul indican ausencia de autocorrelación.
+
+Estos gráficos complementan los diagnósticos textuales y pueden revelar problemas no detectados por los tests estadísticos (o viceversa).
+
+
+---
+
+# **Contacto y soporte**
+
+Para cualquier duda o mejora, puede contactar con la autora en **almoros@uoc.edu**.
+
+---
+

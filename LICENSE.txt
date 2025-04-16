@@ -1,0 +1,16 @@
+Licencia Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)
+
+Este proyecto, que incluye el código fuente, contenidos textuales, materiales gráficos y documentación, está licenciado bajo los términos de la licencia Creative Commons BY-NC-SA 4.0.
+
+Es libre de:
+- Compartir: copiar y redistribuir el material en cualquier medio o formato.
+- Adaptar: remezclar, transformar y construir a partir del material.
+
+Bajo las siguientes condiciones:
+- Atribución: se debe otorgar el crédito apropiado, proporcionar un enlace a la licencia e indicar si se han realizado cambios.
+- No Comercial: no se puede utilizar el material para fines comerciales.
+- Compartir Igual: si se remezcla, transforma o construye a partir del material, se debe distribuir su contribución bajo la misma licencia que el original.
+
+No hay restricciones adicionales: no se puede aplicar términos legales ni medidas tecnológicas que restrinjan legalmente a otros hacer cualquier uso permitido por la licencia.
+
+Más información: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es
