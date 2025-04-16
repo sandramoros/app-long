@@ -1,0 +1,211 @@
+---
+title: "Informe del análisis"
+output: 
+  html_document:
+    toc: true
+    number_sections: true
+echo: false
+params:
+  data: NA
+  data_processed: NA
+  selected_groups: NA
+  selected_timepoints: NA
+  selected_variable: NA
+  comp_mode: NA
+  control_group: NA
+  model_plot: NA
+  model_formula: NA
+  model: NA
+  interaction_comparison: NA
+  var_cov_matrix: NA
+  group_comparisons: NA
+  group_plots: NA
+  diagnostics: NA
+  diagnostics_plots: NA
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r, datos cargados, echo=FALSE}
+
+cat("Primeras filas de los datos cargados\n")
+head(params$data)
+
+```
+
+
+```{r, selecciones, echo=FALSE}
+
+cat("Opciones seleccionadas por el usuario\n")
+
+```
+
+- **Grupos seleccionados**: `r params$selected_groups`
+- **Modo de comparación**: `r params$comp_mode`
+- **Grupo control**: `r params$control_group`
+- **Timepoints seleccionados**: `r params$selected_timepoints`
+- **Variable seleccionada**: `r params$selected_variable`
+
+```{r, datos procesados, echo=FALSE}
+
+cat("Primeras filas de los datos procesados\n")
+head(params$data_processed)
+
+```
+
+```{r Gráfico de los datos, echo=FALSE}
+
+cat("Gráfico de los datos\n")
+
+print(params$model_plot)
+
+```
+
+```{r, resumen del modelo, echo=FALSE}
+
+cat("Modelo\n")
+
+cat("### Fórmula del modelo\n")
+if (!is.null(params$model_formula)) {
+  cat("`", params$model_formula, "`\n\n")
+}
+
+cat("### Resumen del modelo\n")
+if (!is.null(params$model)) {
+  print(summary(params$model))
+} else {
+  cat("No se generó un modelo.")
+}
+
+```
+
+```{r, comparación interacción, echo=FALSE}
+
+cat("Comparación de modelos con y sin interacción\n")
+if (!is.null(params$interaction_comparison)) {
+  print(params$interaction_comparison)
+} else {
+  cat("No se realizó comparación de interacción o no hay datos disponibles.")
+}
+
+```
+
+```{r, matriz varianza-covarianza, echo=FALSE}
+
+cat("Matriz de varianza-covarianza\n")
+if (!is.null(params$var_cov_matrix)) {
+  print(params$var_cov_matrix)
+} else {
+  cat("No se calculó la matriz de varianza-covarianza.")
+}
+
+```
+
+```{r, comparaciones entre grupos, echo=FALSE}
+
+cat("Comparaciones entre grupos\n")
+
+cat("### Medias estimadas por grupo (global)\n")
+print(params$group_comparisons$global_emmeans)
+
+cat("### Medias estimadas por grupo dentro de cada timepoint\n")
+if (is.character(params$group_comparisons$by_timepoint_emmeans)) {
+  cat(params$group_comparisons$by_timepoint_emmeans)
+} else {
+  print(params$group_comparisons$by_timepoint_emmeans)
+}
+
+cat("### Medias estimadas por timepoint dentro de cada grupo\n")
+if (is.character(params$group_comparisons$by_group_emmeans)) {
+  cat(params$group_comparisons$by_group_emmeans)
+} else {
+  print(params$group_comparisons$by_group_emmeans)
+}
+
+cat("### Comparaciones globales entre grupos\n")
+print(params$group_comparisons$global_contrasts)
+
+cat("### Comparaciones por timepoint\n")
+if (is.character(params$group_comparisons$by_timepoint_contrasts)) {
+  cat(params$group_comparisons$by_timepoint_contrasts)
+} else {
+  print(params$group_comparisons$by_timepoint_contrasts)
+}
+
+cat("### Comparaciones por grupo\n")
+if (is.character(params$group_comparisons$by_group_contrasts)) {
+  cat(params$group_comparisons$by_group_contrasts)
+} else {
+  print(params$group_comparisons$by_group_contrasts)
+}
+
+```
+
+```{r Gráfico de comparaciones, echo=FALSE}
+
+cat("Comparaciones entre grupos en formato gráfico\n")
+
+# Gráfico global
+if (!is.null(params$group_plots$global)) {
+  cat("### Comparación global entre grupos\n")
+  print(params$group_plots$global)
+}
+
+# Gráfico por timepoint
+if (!is.null(params$group_plots$by_timepoint)) {
+  cat("### Comparaciones entre grupos por timepoint\n")
+  print(params$group_plots$by_timepoint)
+}
+
+# Gráfico por grupo
+if (!is.null(params$group_plots$by_group)) {
+  cat("### Comparaciones entre timepoints por grupo\n")
+  print(params$group_plots$by_group)
+}
+
+```
+
+```{r, diagnóstico del modelo, echo=FALSE}
+
+cat("Diagnósticos del modelo\n")
+if (!is.null(params$diagnostics)) {
+  cat(params$diagnostics, sep = "\n")
+} else {
+  cat("No se generaron diagnósticos.")
+}
+
+```
+
+```{r, Diagnósticos gráficos, echo=FALSE}
+
+
+cat("Diagnósticos del modelo en formato gráfico\n")
+
+# Histograma de residuos
+print(params$diagnostics_plots$hist_resid)
+print("Una distribución similar a la curva roja indica normalidad en los residuos.")
+
+# Q-Q plot de residuos
+print(params$diagnostics_plots$qqplot)
+print("Los puntos alineados en la línea indican normalidad en los residuos.")
+
+# Q-Q plot de efectos aleatorios
+if (!is.null(params$diagnostics_plots$qqplot_re)) {
+  print(params$diagnostics_plots$qqplot_re)
+  print("Los puntos alineados en la línea indican normalidad en los efectos aleatorios.")
+}
+
+# Residuos vs Valores ajustados
+print(params$diagnostics_plots$resid_fitted)
+print("Una distribución aleatoria de los residuos indica homocedasticidad.")
+
+# Autocorrelación de residuos
+print(params$diagnostics_plots$autocorr_plot)
+print("Las barras dentro de la banda azul indican ausencia de autocorrelación.")
+
+```
+
