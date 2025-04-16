@@ -10,7 +10,8 @@ Accede a la versión en línea de la aplicación: https://moros.shinyapps.io/app
 ## Estructura del repositorio
 
 - app.R: código de la aplicación (interfaz y servidor).
-- www/: recursos (tutorial).
+- www/: archivo con el tutorial de uso de la aplicación.
+- report: archivo para generar informe en HTML.
 - *.xlsx: plantillas de entrada de datos.
 - LICENSE: licencia del proyecto.
 - README.md: este documento.
