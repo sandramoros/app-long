@@ -16,7 +16,7 @@ output:
 
 Esta aplicación ha sido desarrollada para facilitar el ajuste de **modelos estadísticos**: en función del número de *timepoints* a analizar se ajusta:
 
-- Un modelo lineal simple (`lm()`) si solo hay un *timepoint*.
+- Un modelo lineal (`lm()`) si solo hay un *timepoint*.
 
 - Modelos lineales de efectos mixtos (`lmer()` o `lme()`) si hay dos o más *timepoints*, permitiendo así modelar la variabilidad entre sujetos."
 
