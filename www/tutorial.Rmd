@@ -37,7 +37,7 @@ La aplicación permite:
 
 # **Carga de datos**
 
-La aplicación acepta **archivos Excel (.xlsx)** con datos en dos formatos posibles, *wide* o *long*. En **Plantilla de descarga** se pueden decargar las dos plantillas para rellenarlas con los datos del usuario.
+La aplicación acepta **archivos Excel (.xlsx)** con datos en dos formatos posibles, *wide* o *long*. En **Plantilla de descarga** se pueden descargar las dos plantillas para rellenarlas con los datos del usuario.
 
 ## Formato Wide
 
