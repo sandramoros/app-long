@@ -65,7 +65,7 @@ ui <- fluidPage(
              class = "btn btn-primary", "Abrir tutorial (HTML)"),
       hr(),
       # Selección de plantilla de descarga (wide o long)
-      radioButtons("template_choice", "Decargar plantilla", 
+      radioButtons("template_choice", "Descargar plantilla", 
                    choices = c("Wide", "Long"), selected = "Wide"),
       downloadButton("downloadTemplate", "Descargar plantilla"),
       hr(),
